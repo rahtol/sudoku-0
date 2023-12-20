@@ -30,6 +30,11 @@ export default {
             type: Boolean,
             required: true,
         },
+        seedMode: {
+            type: Boolean,
+            required: false,
+            default: false,
+        },
     },
     data() {
         return {
@@ -39,6 +44,7 @@ export default {
             autoCandidatesCalculated : 0,
             autoCandidatesManuallyExcluded : 0,
             hasConflict : false, // is the current cell value in conflict with another cell value
+            seedValue: 0,
         };
     },
     computed: {
@@ -57,10 +63,16 @@ export default {
         keyPressed(n: number) {
             console.log(`row=${this.row}, col=${this.col}, key=${n}`);
             
+            if (this.seedMode) {
+                this.seedValue = n;
+                this.$emit('cellSeeded', {row: this.row, col: this.col, value: this.seedValue})
+                return;
+            };
+
             // no input on initial cells 
             if (this.isInitialCell()) {
                 return;
-            }
+            };
 
             if (this.mode == 1 || n == 0) {
                 // applies also for delete, which is represented by zero
@@ -118,6 +130,7 @@ export default {
             this.autoCandidatesCalculated = 1022;
             this.autoCandidatesManuallyExcluded = 0;
             this.hasConflict = false;
+            this.seedValue = -1;
         },
     }
 }
@@ -126,15 +139,18 @@ export default {
 
 <template>
     <div class="su-cell" :class="{ hasFocus: hasFocus, initialCell: isInitialCell() }" @click="focusRequest()">
-        <div class="mode1" v-show="value != 0">
+        <div class="mode1" v-show="value != 0 && !seedMode">
             <span v-if="value != 0">{{ value }}</span>
         </div>
-        <div class="mode2" v-show="value == 0">
+        <div class="mode2" v-show="value == 0 && !seedMode">
             <template v-for="i in 9" :key="i">
                 <div class="candidate-cell" :class="{candidateSet: isCandidateSet(i)}" @click="hasFocus && toggleCandidate(i)">
                     <span>{{i}}</span>
                 </div>
             </template>
+        </div>
+        <div class="mode3" v-show="seedMode">
+            <span>{{ (seedValue == -1 ? '?' : seedValue) }}</span>
         </div>
         <div class="conflictIndicator" v-show="hasConflict">
         </div>
@@ -164,6 +180,7 @@ export default {
 .su-cell.initialCell  {
     background-color: #e6e6e6;
 }
+
 
 .su-cell.hasFocus {
     background-color: #e6c500;
@@ -213,5 +230,17 @@ export default {
     border-radius: 50%;
     background-color: #ff4b56;
 }
+
+.su-cell .mode3 {
+    font-size: v-bind(calcFontsizeNormalMode());
+    line-height: v-bind(size+'px');
+    color: #2c64d5;
+    background-color: lightcoral;
+}
+
+.su-cell.hasFocus .mode3  {
+    background-color: #e6c500;
+}
+
 
 </style>

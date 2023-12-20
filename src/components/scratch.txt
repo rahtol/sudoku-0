@@ -1,3 +1,7 @@
             <svg viewbox="0 0 300 300" width=100% heigth=100% >
                 <circle cx="100" cy="100" r="100" fill="crimson"/>
             </svg>
+
+
+            let solution ='837961425651427839924835167319652784768149253245783691586314972492576318173298546';
+            let sol = solution.split('').map((c)=>parseInt(c));

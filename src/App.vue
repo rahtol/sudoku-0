@@ -1,5 +1,6 @@
 <script  lang="ts">
 
+import NavBar from './components/NavBar.vue'
 import SudokuControls from './components/SudokuControls.vue'
 import { vueWindowSizeMixin } from 'vue-window-size/mixin';
 import SudokuBoard from './components/SudokuBoard.vue'
@@ -22,11 +23,13 @@ export default {
     return {
       mode: 1,
       autoCandidateMode: false,
+      seedMode: false,
     };
   },
   components: {
     SudokuControls,
     SudokuBoard,
+    NavBar,
   },
   computed: {
     availableBoardWidth() {
@@ -60,7 +63,7 @@ export default {
       if (keyboardEvent.key >= '1' && keyboardEvent.key <= '9') {
         this.keyPressed({ key: +keyboardEvent.key, mode: this.mode });
       };
-      if (keyboardEvent.key == 'x' || keyboardEvent.key == 'X') {
+      if (keyboardEvent.key == 'x' || keyboardEvent.key == '0') {
         this.keyPressed({ key: 0, mode: this.mode });
       };
       if (keyboardEvent.key == 'ArrowLeft') {
@@ -101,6 +104,23 @@ export default {
         (this.$refs.SudokuControls as typeof SudokuControls).toggleAutoCandidateMode();
       };
     },
+    seedModeChanged(seedMode: boolean) {
+      console.log('seedModeChanged', seedMode);
+      if (seedMode) {
+        this.seedMode = seedMode;
+        (this.$refs.NavBar as typeof NavBar).stopElapsedSecondsTimer();
+        (this.$refs.SudokuBoard as typeof SudokuBoard).enterSeedMode();
+      }
+      else {
+        var ok: boolean = (this.$refs.SudokuBoard as typeof SudokuBoard).leaveSeedMode();
+        this.seedMode = seedMode;
+        if (ok) {
+          (this.$refs.NavBar as typeof NavBar).elapsedSeconds = 0;
+        };
+        (this.$refs.NavBar as typeof NavBar).startElapsedSecondsTimer();
+      }
+      (this.$refs.NavBar as typeof NavBar).seedMode = this.seedMode;
+    }
   },
   mounted() {
     const na = convertIntialState(example1);
@@ -113,12 +133,15 @@ export default {
 
 <template>
   <div class="page-container" tabindex="0" @keydown="onKeyDownEvent">
-    <div class="navbar">Navbar ... ToDo - Windowsize = {{ $windowWidth }} x {{ $windowHeight }}</div>
+    <NavBar ref="NavBar"
+      @seedModeChanged="seedModeChanged"
+    />
     <div class="su-container" >
       <SudokuBoard ref="SudokuBoard" 
         :available_width="availableBoardWidth" 
         :mode="mode"
         :autoCandidateMode="autoCandidateMode"
+        :seedMode="seedMode"
       />
       <SudokuControls ref="SudokuControls"
           @keyPressed="keyPressed" 
@@ -136,12 +159,6 @@ export default {
    outline: none;
 }
 
-.navbar {
-  display: block;
-  margin: 0;
-  padding: 1rem;
-  border: 1px solid black;
-}
 
 @media (width > 820px) {
 

@@ -1,6 +1,8 @@
 <script lang="ts">
 
-import SudokuCell from './SudokuCell.vue'
+import type { TFocus } from '../CommonTypes';
+import SudokuCell from './SudokuCell.vue';
+type TSudokuCell = typeof SudokuCell;
 
 export default  {
     components: {
@@ -18,6 +20,11 @@ export default  {
         autoCandidateMode : {
             type: Boolean,
             required : true,
+        },
+        seedMode: {
+            type: Boolean,
+            required: false,
+            default: false,
         },
     }, 
     data() {
@@ -42,11 +49,11 @@ export default  {
         {
             return (i*this.cell_width + [0,1,2,7,8,9,14,15,16][i]) + 'px' ;
         },
-        focusRequest(focus:any) {
+        focusRequest(focus: TFocus) {
             this.focus = focus;
         },
         keyPressed(n: number) {
-             (this.$refs.cell as (typeof SudokuCell)[])[this.focus.row*9 + this.focus.col].keyPressed(n);
+             (this.$refs.cell as TSudokuCell[])[this.focus.row*9 + this.focus.col].keyPressed(n);
         },
         stateChanged(cellChangeSpec: any) {
             console.log(cellChangeSpec);
@@ -61,6 +68,38 @@ export default  {
             }
             this.calculateAutoCandidates();
             this.checkForConflictingValues(); // just pro forma, should not be necessary - initial board expected to be consistent
+        },
+        enterSeedMode() {
+//            for (let cell of (this.$refs.cell as (typeof SudokuCell)[])) {
+//                cell.initializeCell(0);
+//            };
+            this.focus = {row: 0, col: 0};
+        },
+        cellSeeded(focus: TFocus) {
+            this.focus = ((focus: TFocus): TFocus => {
+                if (focus.col < 8) {
+                    return {row: focus.row, col: focus.col +=1 }
+                }
+                else if (focus.row < 8) {
+                    return {row: focus.row +=1, col: focus.col =0 }
+                }
+                else {
+                    return { row: focus.row, col: focus.col }
+                }
+            }) (focus);
+        },
+        leaveSeedMode(): boolean {
+            let na: number[] = (this.$refs.cell as TSudokuCell[]).map((c) => c.seedValue);
+            console.log(na);
+            const allCellsSeeded = na.every((n) => n >= 0);
+            if (!allCellsSeeded) return false;
+            const uniqueSolutionExists = this.checkForUniqueSolution(na);
+            console.log('checkForUniqueSolution', uniqueSolutionExists);
+            if (!uniqueSolutionExists) return false;
+            if (allCellsSeeded && uniqueSolutionExists) {
+                this.initializeBoard(na);
+            };
+            return true;
         },
         calculateAutoCandidates() {
             let i: number = 0, cell : number[][] = [[],[],[],[],[],[],[],[],[]];
@@ -116,10 +155,70 @@ export default  {
                                 if (i != row || j != col) hasConflict = hasConflict || (referenceValue == cell[i][j]);
                     };
                     // assign calculated result to actual SudokuCell
-                    (this.$refs.cell as (typeof SudokuCell)[])[row * 9 + col].hasConflict = hasConflict;
+                    (this.$refs.cell as TSudokuCell[])[row * 9 + col].hasConflict = hasConflict;
                 };
             };
         },
+        checkForUniqueSolution(cell0: number[]) : boolean {
+            let cell = Array(81).fill(0);
+            let isPossible = (idx: number, n:number) : boolean => {
+                let col: number = idx % 9;
+                let row: number = (idx - col) / 9;
+                // check column
+                for (let icol = 0; icol < 9; icol += 1)
+                    if (cell[row * 9 + icol] == n) return false;
+                // check row
+                for (let irow = 0; irow < 9; irow += 1)
+                    if (cell[irow * 9 + col] == n) return false;
+                // check block
+                let row0 : number = row - row % 3;
+                let col0 : number = col - col % 3;
+                for (let irow : number = row0; irow < row0 + 3; irow +=1)
+                    for (let icol : number = col0; icol < col0 + 3; icol +=1)
+                        if (cell[irow * 9 + icol] == n) return false;
+                // finally, n is possible at cell idx since no exclusions were found
+                return true; 
+            };
+            let isConsistent =(): boolean => {
+                for (let i = 0; i < 81; i += 1) {
+                    if (cell0[i] != 0) {
+                        if (isPossible(i, cell0[i])) {
+                            cell[i] = cell0[i];
+                        }
+                        else {
+                            return false;
+                        };
+                    }
+                };
+                return true;
+            };
+            if (!isConsistent()) {
+                return false;
+            }
+            let noSolutionsFound = 0;
+            let helper = (idx: number) => {
+                if (noSolutionsFound > 1) {
+                    return;
+                }
+                while (idx < 81 && cell[idx] != 0) {
+                    idx += 1;
+                };
+                if (idx == 81) {
+                    noSolutionsFound +=1;
+                    return;
+                };
+                // here we have: idx < 81 && cell[idx] == 0
+                for (let n = 1; n <= 9; n +=1) {
+                    if (isPossible(idx, n)) {
+                        cell[idx] = n;
+                        helper(idx + 1);
+                        cell[idx] = 0;
+                    };
+                };
+            };
+            helper(0);
+            return noSolutionsFound == 1;
+        }, 
     },
 }
 </script>
@@ -140,6 +239,8 @@ export default  {
                         :style="{ top: px(row), left: px(col) }"
                         @focusRequest="focusRequest"
                         @stateChanged="stateChanged"
+                        :seedMode="seedMode"
+                        @cellSeeded="cellSeeded"
                 />
             </template> 
        </template> 
