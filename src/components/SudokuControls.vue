@@ -183,12 +183,13 @@ export default {
 @media (width <= 820px) {
 
 .PanelContainer {
-    width: 450px;
+    width: min(450px,100%);
     margin-top: 40px;
 }
 .NumberPad {
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     gap: 12px;
+    width: min(100%, 400px);
 }
 
 .NumberPad button {
@@ -201,13 +202,14 @@ export default {
 }
 
 .NumberKey {
-   width: 80px;
-   height: 40px;
+   width: 100%;
+   height: auto;
+   line-height: 1.5em;
 }
 
 .DeleteButton {
-   width: 80px;
-   height: 40px;
+   width: 100%;
+   height: auto;
 }
 
 }

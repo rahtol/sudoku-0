@@ -41,7 +41,7 @@ export default {
               // 40 = margin between sudoku board and sudoku controls
       };
       ret = Math.min(ret, 566);
-      ret = Math.max(ret, 459);
+      ret = Math.max(ret, 459-64);
       return ret;
     }
   },
@@ -149,6 +149,11 @@ export default {
           @autoCandidateModeChange="setAutoCandidateMode"
       />
     </div>
+    <div class="debug">
+      <hr>
+      availableBoardWith={{ availableBoardWidth }}<br>
+      windowWidth={{ $windowWidth }}
+    </div>
   </div>
 </template>
 
@@ -157,6 +162,10 @@ export default {
 
 .page-container:focus {
    outline: none;
+}
+
+.debug {
+  margin-top: 1rem;
 }
 
 

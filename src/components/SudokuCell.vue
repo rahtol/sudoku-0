@@ -213,9 +213,13 @@ export default {
     opacity: 0%;
 }
 
+/*
+@media(hover: hover) {
 .su-cell.hasFocus .candidate-cell:hover {
     opacity: 25%;
 }
+}
+*/
 
 .candidate-cell.candidateSet {
     opacity: 50%;

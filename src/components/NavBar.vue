@@ -5,9 +5,6 @@
       <div class="navbar-collapse">
         <ul class="navbar-nav">
           <li class="navbar-item" :class="{active: seedMode}" @click="toggleSeedMode()">Seed</li>
-          <li class="navbar-item">Reset</li>
-          <li class="navbar-item">Load</li>
-          <li class="navbar-item">Save</li>
          </ul>
         <div class="StatusIndications">
           <div class="TimerIndication">{{ elapsed_HHMMSS }}</div>
@@ -103,7 +100,6 @@
   border-radius: 0.5rem;
   color:black;
   opacity: 0.35;
-  margin-right: 1rem;
   margin-bottom: 0.25rem;
   margin-top: 0.25rem;
 }
