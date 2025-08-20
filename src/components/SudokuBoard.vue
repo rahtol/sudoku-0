@@ -33,15 +33,24 @@ export default  {
         }
     },
     computed: {
-        cell_width ():number
+        cell_width (): number
         {
             // 10 = board border 5px
             // 16 = spacing between cells 6*1px + 2*5px;
             return Math.floor((this.available_width - (10 + 16)) / 27) * 3;
         },
-        board_width():number
+        board_width(): number
         {
             return this.cell_width * 9 + 16 + 10;
+        },
+        initialized(): boolean {
+            return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.solutionValue > 0; });
+        },
+        solved(): boolean {
+            return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.value == cell.solutionValue; });
+        },
+        solvable(): boolean {
+            return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.value == 0 || cell.value == cell.solutionValue; });
         },
     },
     methods: {
@@ -60,19 +69,16 @@ export default  {
             this.checkForConflictingValues();
             this.calculateAutoCandidates();
         },
-        initializeBoard(n: number[]) {
+        initializeBoard(initialValue: number[], solutionValue: number[]) {
             let i = 0;
-            for (let cell of (this.$refs.cell as (typeof SudokuCell)[])) {
-                cell.initializeCell(n[i]);
+            for (let cell of (this.$refs.cell as TSudokuCell[])) {
+                cell.initializeCell(initialValue[i], solutionValue[i]);
                 i += 1;
             }
             this.calculateAutoCandidates();
             this.checkForConflictingValues(); // just pro forma, should not be necessary - initial board expected to be consistent
         },
         enterSeedMode() {
-//            for (let cell of (this.$refs.cell as (typeof SudokuCell)[])) {
-//                cell.initializeCell(0);
-//            };
             this.focus = {row: 0, col: 0};
         },
         cellSeeded(focus: TFocus) {
@@ -93,12 +99,11 @@ export default  {
             console.log(na);
             const allCellsSeeded = na.every((n) => n >= 0);
             if (!allCellsSeeded) return false;
-            const uniqueSolutionExists = this.checkForUniqueSolution(na);
-            console.log('checkForUniqueSolution', uniqueSolutionExists);
-            if (!uniqueSolutionExists) return false;
-            if (allCellsSeeded && uniqueSolutionExists) {
-                this.initializeBoard(na);
-            };
+            const uniqueSolution = this.checkForUniqueSolution(na);
+            console.log('checkForUniqueSolution', uniqueSolution != undefined);
+            if (uniqueSolution != undefined) return false;
+            if (uniqueSolution)
+                this.initializeBoard(na, uniqueSolution);
             return true;
         },
         calculateAutoCandidates() {
@@ -159,8 +164,8 @@ export default  {
                 };
             };
         },
-        checkForUniqueSolution(cell0: number[]) : boolean {
-            let cell = Array(81).fill(0);
+        checkForUniqueSolution(cell0: number[]) : number[] | undefined {
+            let cell = Array(81).fill(0), solution: number[] = [];
             let isPossible = (idx: number, n:number) : boolean => {
                 let col: number = idx % 9;
                 let row: number = (idx - col) / 9;
@@ -193,7 +198,7 @@ export default  {
                 return true;
             };
             if (!isConsistent()) {
-                return false;
+                return undefined;
             }
             let noSolutionsFound = 0;
             let helper = (idx: number) => {
@@ -204,6 +209,7 @@ export default  {
                     idx += 1;
                 };
                 if (idx == 81) {
+                    solution = cell.slice();
                     noSolutionsFound +=1;
                     return;
                 };
@@ -217,7 +223,7 @@ export default  {
                 };
             };
             helper(0);
-            return noSolutionsFound == 1;
+            return (noSolutionsFound == 1 ? solution : undefined);
         }, 
     },
 }

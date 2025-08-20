@@ -40,6 +40,7 @@ export default {
         return {
             initialValue: 0,
             value: 0,
+            solutionValue: 0,
             candidates: 0,  // bitlist of lenght 9 starting at bit 1
             autoCandidatesCalculated : 0,
             autoCandidatesManuallyExcluded : 0,
@@ -50,7 +51,7 @@ export default {
     computed: {
         autoCandidates() {
             return this.autoCandidatesCalculated & ~this.autoCandidatesManuallyExcluded;
-        }
+        },
     },
     methods: {
         focusRequest () {
@@ -123,14 +124,15 @@ export default {
             // initial cells are those that are given at start of game and cannot be changed during the game
             return this.initialValue != 0;
         },
-        initializeCell(n: number) {
-            this.initialValue = n;
-            this.value = n;
+        initializeCell(initialValue: number, solutionValue: number) {
+            this.initialValue = initialValue;
+            this.value = initialValue;
             this.candidates = 0;
             this.autoCandidatesCalculated = 1022;
             this.autoCandidatesManuallyExcluded = 0;
             this.hasConflict = false;
             this.seedValue = -1;
+            this.solutionValue = solutionValue;
         },
     }
 }

@@ -10,8 +10,9 @@
           <div class="TimerIndication">{{ elapsed_HHMMSS }}</div>
           <div class="SolutionUniqeIndication">
             <svg viewBox="0 0 100 100" width="32" height="32">
-              <circle cx="50" cy="50" r="30" fill="#e6e6e6" />
+              <circle cx="50" cy="50" r="40" fill="#e6e6e6" />
             </svg>
+            <div><span class="pi pi-times"></span></div>
           </div>
         </div>
       </div>
@@ -113,12 +114,31 @@
   color: #e6e6e6;
 }
 
+.SolutionUniqeIndication svg {
+  position: absolute
+}
+.SolutionUniqeIndication div {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  color: red;
+  display: flex;
+  justify-content:center;
+  align-items: center;
+}
+
 </style>
 
 <script lang="ts">
 
 export default {
     name: 'NavBar',
+    props: {
+      initialized: {
+        type: Boolean,
+        required: true,
+      },
+    },
     data() {
       return {
         seedMode: false,

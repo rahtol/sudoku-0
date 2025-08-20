@@ -3,4 +3,5 @@ export interface TFocus  {
     col: number,
 };
 
-export type TBoardStateShort = number[];
+export type TBoardStateOneDim = number[];
+

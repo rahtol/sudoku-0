@@ -3,7 +3,8 @@
 import NavBar from './components/NavBar.vue'
 import SudokuControls from './components/SudokuControls.vue'
 import { vueWindowSizeMixin } from 'vue-window-size/mixin';
-import SudokuBoard from './components/SudokuBoard.vue'
+import SudokuBoard from './components/SudokuBoard.vue';
+import 'primeicons/primeicons.css';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let example0 = '000000160000900005430020000001000040600050030008100007070000002590270000000000050';  // NYT 08.12.2023
@@ -43,7 +44,11 @@ export default {
       ret = Math.min(ret, 566);
       ret = Math.max(ret, 459-64);
       return ret;
-    }
+    },
+    initialized(): boolean {
+      const sudokuBoard = this.$refs.SudokuBoard as typeof SudokuBoard;
+      return sudokuBoard !== undefined && sudokuBoard.initialized;
+    },
   },
   methods: {
     keyPressed(o: any) {
@@ -124,7 +129,8 @@ export default {
   },
   mounted() {
     const na = convertIntialState(example1);
-    (this.$refs.SudokuBoard as typeof SudokuBoard).initializeBoard(na);
+    const sudokuBoard = this.$refs.SudokuBoard as typeof SudokuBoard;
+    (sudokuBoard).initializeBoard(na, sudokuBoard.checkForUniqueSolution(na));
   },
 };
 
@@ -134,6 +140,7 @@ export default {
 <template>
   <div class="page-container" tabindex="0" @keydown="onKeyDownEvent">
     <NavBar ref="NavBar"
+      :initialized="initialized"
       @seedModeChanged="seedModeChanged"
     />
     <div class="su-container" >
@@ -152,7 +159,8 @@ export default {
     <div class="debug">
       <hr>
       availableBoardWith={{ availableBoardWidth }}<br>
-      windowWidth={{ $windowWidth }}
+      windowWidth={{ $windowWidth }}<br>
+      <span class="pi pi-check"></span>
     </div>
   </div>
 </template>
