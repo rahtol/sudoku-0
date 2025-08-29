@@ -5,6 +5,7 @@
       <div class="navbar-collapse">
         <ul class="navbar-nav">
           <li class="navbar-item" :class="{active: seedMode}" @click="toggleSeedMode()">Seed</li>
+          <li class="navbar-item" :class="{active: false}" @click="genNewSudoku()">Generate</li>
          </ul>
         <div class="StatusIndications">
           <div class="TimerIndication">{{ elapsed_HHMMSS }}</div>
@@ -166,6 +167,9 @@ export default {
       stopElapsedSecondsTimer() {
         clearInterval(this.elapsedSecondsTimerId);
         this.elapsedSecondsTimerId = 0;
+      },
+      genNewSudoku() {
+
       }
     },
     mounted() {

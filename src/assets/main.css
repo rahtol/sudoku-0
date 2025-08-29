@@ -1,4 +1,7 @@
+@import "tailwindcss";
 @import './base.css';
+@import './style.css';
+@import './flags.css';
 
 #app {
   max-width: 910px;

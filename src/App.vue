@@ -1,6 +1,6 @@
 <script  lang="ts">
 
-import NavBar from './components/NavBar.vue'
+import SudokuMenubar from './components/SudokuMenubar.vue'
 import SudokuControls from './components/SudokuControls.vue'
 import { vueWindowSizeMixin } from 'vue-window-size/mixin';
 import SudokuBoard from './components/SudokuBoard.vue';
@@ -30,7 +30,7 @@ export default {
   components: {
     SudokuControls,
     SudokuBoard,
-    NavBar,
+    SudokuMenubar,
   },
   computed: {
     availableBoardWidth() {
@@ -47,6 +47,7 @@ export default {
     },
     initialized(): boolean {
       const sudokuBoard = this.$refs.SudokuBoard as typeof SudokuBoard;
+//      const sudokuMenuBar = this.$refs.SudokuMenubar as typeof SudokuMenubar;
       return sudokuBoard !== undefined && sudokuBoard.initialized;
     },
   },
@@ -113,18 +114,24 @@ export default {
       console.log('seedModeChanged', seedMode);
       if (seedMode) {
         this.seedMode = seedMode;
-        (this.$refs.NavBar as typeof NavBar).stopElapsedSecondsTimer();
+        (this.$refs.SudokuMenubar as typeof SudokuMenubar).stopElapsedSecondsTimer();
         (this.$refs.SudokuBoard as typeof SudokuBoard).enterSeedMode();
       }
       else {
         var ok: boolean = (this.$refs.SudokuBoard as typeof SudokuBoard).leaveSeedMode();
         this.seedMode = seedMode;
         if (ok) {
-          (this.$refs.NavBar as typeof NavBar).elapsedSeconds = 0;
+          (this.$refs.SudokuMenubar as typeof SudokuMenubar).elapsedSeconds = 0;
         };
-        (this.$refs.NavBar as typeof NavBar).startElapsedSecondsTimer();
+        (this.$refs.SudokuMenubar as typeof SudokuMenubar).startElapsedSecondsTimer();
       }
-      (this.$refs.NavBar as typeof NavBar).seedMode = this.seedMode;
+      (this.$refs.SudokuMenubar as typeof SudokuMenubar).seedMode = this.seedMode;
+    },
+    newSudokuReady(initialValue: number[], solutionValue: number[])
+    {
+        (this.$refs.SudokuMenubar as typeof SudokuMenubar).stopElapsedSecondsTimer();
+        (this.$refs.SudokuBoard as typeof SudokuBoard).initializeBoard(initialValue, solutionValue);
+        (this.$refs.SudokuMenubar as typeof SudokuMenubar).startElapsedSecondsTimer();
     }
   },
   mounted() {
@@ -139,9 +146,9 @@ export default {
 
 <template>
   <div class="page-container" tabindex="0" @keydown="onKeyDownEvent">
-    <NavBar ref="NavBar"
-      :initialized="initialized"
+    <SudokuMenubar :initialized="true" ref="SudokuMenubar"
       @seedModeChanged="seedModeChanged"
+      @newSudokuReady="newSudokuReady"
     />
     <div class="su-container" >
       <SudokuBoard ref="SudokuBoard" 
