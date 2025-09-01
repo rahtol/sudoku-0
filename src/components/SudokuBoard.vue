@@ -56,13 +56,13 @@ export default  {
     methods: {
         px(i:number):string
         {
-            return (i*this.cell_width + [0,1,2,7,8,9,14,15,16][i]) + 'px' ;
+            return (i*this.cell_width + ([0,1,2,7,8,9,14,15,16][i] as number)) + 'px' ;
         },
         focusRequest(focus: TFocus) {
             this.focus = focus;
         },
         keyPressed(n: number) {
-             (this.$refs.cell as TSudokuCell[])[this.focus.row*9 + this.focus.col].keyPressed(n);
+             ((this.$refs.cell as TSudokuCell[])[this.focus.row*9 + this.focus.col] as TSudokuCell).keyPressed(n);
         },
         stateChanged(cellChangeSpec: any) {
             console.log(cellChangeSpec);
@@ -109,27 +109,27 @@ export default  {
         calculateAutoCandidates() {
             let i: number = 0, cell : number[][] = [[],[],[],[],[],[],[],[],[]];
             for (let sucell of (this.$refs.cell as (typeof SudokuCell)[])) {
-                cell[(i - i%9) / 9].push(sucell.value);
+                (cell[(i - i%9) / 9] as number[]).push(sucell.value);
                 i = i + 1; 
             }
             for (let row = 0; row < 9; row += 1) {
                 for (let col = 0; col < 9; col += 1) {
-                    if (cell[row][col] == 0) {
+                    if ((cell[row] as number[])[col] == 0) {
                         let excludedCandidates = 0; // at the beginning no value is excluded
                         // check row
                         for (let j : number = 0; j < 9; j +=1)
-                            excludedCandidates |= (1 << cell[row][j]);
+                            excludedCandidates |= (1 << ((cell[row] as number[])[j] as number));
                         // check column
                         for (let i : number = 0; i < 9; i +=1)
-                            excludedCandidates |= (1 << cell[i][col]);
+                            excludedCandidates |= (1 << ((cell[i] as number[])[col] as number));
                         // check block
                         let i0 : number = row - row % 3;
                         let j0 : number = col - col % 3;
                         for (let i : number = i0; i < i0 + 3; i +=1)
                             for (let j : number = j0; j < j0 + 3; j +=1)
-                                excludedCandidates |= (1 << cell[i][j]);
+                                excludedCandidates |= (1 << ((cell[i] as number[])[j] as number));
                         // assign calculated bitset to actual SudokuCell
-                        (this.$refs.cell as (typeof SudokuCell)[])[row * 9 + col].autoCandidatesCalculated = 1022 & ~excludedCandidates;
+                        ((this.$refs.cell as (typeof SudokuCell)[])[row * 9 + col] as (typeof SudokuCell)).autoCandidatesCalculated = 1022 & ~excludedCandidates;
                     };
                 };
             };
@@ -137,30 +137,38 @@ export default  {
         checkForConflictingValues() {
             let i: number = 0, cell : number[][] = [[],[],[],[],[],[],[],[],[]];
             for (let sucell of (this.$refs.cell as (typeof SudokuCell)[])) {
-                cell[(i - i%9) / 9].push(sucell.value);
+                let rowIdx = (i - i%9) / 9;
+                if (!cell[rowIdx]) {
+                    cell[rowIdx] = [];
+                }
+                cell[rowIdx].push(sucell.value);
                 i = i + 1; 
             }
             for (let row = 0; row < 9; row += 1) {
                 for (let col = 0; col < 9; col += 1) {
                     // check one cell - but only if it has a value - a cell without value never is in conflict with another cell
                     let hasConflict : boolean = false;
-                    if (cell[row][col] != 0) {
-                        let referenceValue = cell [row][col]; // reference value
+                    let cellrow = cell[row];
+                    if (!cellrow) {
+                        cellrow = [];
+                    }
+                    if (cellrow[col] != 0) {
+                        let referenceValue = cellrow[col]; // reference value
                         // check row, but skip the reference cell
                         for (let j : number = 0; j < 9; j +=1)
-                            if (j != col) hasConflict = hasConflict || (referenceValue == cell[row][j]);
+                            if (j != col) hasConflict = hasConflict || (referenceValue == cellrow[j]);
                         // check column, but skip the reference cell
                         for (let i : number = 0; i < 9; i +=1)
-                            if (i != row) hasConflict = hasConflict || (referenceValue == cell[i][col]);
+                            if (i != row) hasConflict = hasConflict || (referenceValue == (cell[i] as number[])[col]);
                         // check block, but skip the reference cell
                         let i0 : number = row - row % 3;
                         let j0 : number = col - col % 3;
                         for (let i : number = i0; i < i0 + 3; i +=1)
                             for (let j : number = j0; j < j0 + 3; j +=1)
-                                if (i != row || j != col) hasConflict = hasConflict || (referenceValue == cell[i][j]);
+                                if (i != row || j != col) hasConflict = hasConflict || (referenceValue == (cell[i] as number [])[j]);
                     };
                     // assign calculated result to actual SudokuCell
-                    (this.$refs.cell as TSudokuCell[])[row * 9 + col].hasConflict = hasConflict;
+                    ((this.$refs.cell as TSudokuCell[])[row * 9 + col] as TSudokuCell).hasConflict = hasConflict;
                 };
             };
         },
@@ -187,7 +195,7 @@ export default  {
             let isConsistent =(): boolean => {
                 for (let i = 0; i < 81; i += 1) {
                     if (cell0[i] != 0) {
-                        if (isPossible(i, cell0[i])) {
+                        if (isPossible(i, (cell0[i] as number))) {
                             cell[i] = cell0[i];
                         }
                         else {

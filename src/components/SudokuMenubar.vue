@@ -101,22 +101,22 @@ export default {
                         {
                             label: 'Easy',
                             icon: 'pi pi-bolt',
-                            command: () => { this.genNewSudoku('easy')}
+                            command: () => { (this.genNewSudoku as Function)('easy')}
                         },
                         {
                             label: 'Medium',
                             icon: 'pi pi-server',
-                            command: () => { this.genNewSudoku('medium')}
+                            command: () => { (this.genNewSudoku as Function)('medium')}
                         },
                         {
                             label: 'Hard',
                             icon: 'pi pi-pencil',
-                            command: () => { this.genNewSudoku('hard')}
+                            command: () => { (this.genNewSudoku as Function)('hard')}
                         },
                         {
                             label: 'Expert',
                             icon: 'pi pi-pencil',
-                            command: () => { this.genNewSudoku('expert')}
+                            command: () => { (this.genNewSudoku as Function)('expert')}
                         }
                     ]
                 }

@@ -1,6 +1,6 @@
 <script lang="ts">
 
-enum NormalCandidateMode {
+export enum NormalCandidateMode {
     NormalMode = 1,
     CandidateMode = 2,
 }
