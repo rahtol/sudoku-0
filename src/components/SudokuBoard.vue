@@ -26,10 +26,15 @@ export default  {
             required: false,
             default: false,
         },
-    }, 
+    },
+    emits: [
+        'stateChanged'
+    ], 
     data() {
         return {
             focus : { row: 0, col: 0},
+            solvable : true,
+            solved : false,
         }
     },
     computed: {
@@ -45,12 +50,6 @@ export default  {
         },
         initialized(): boolean {
             return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.solutionValue > 0; });
-        },
-        solved(): boolean {
-            return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.value == cell.solutionValue; });
-        },
-        solvable(): boolean {
-            return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.value == 0 || cell.value == cell.solutionValue; });
         },
     },
     methods: {
@@ -68,6 +67,13 @@ export default  {
             console.log(cellChangeSpec);
             this.checkForConflictingValues();
             this.calculateAutoCandidates();
+            const nextSolvable = this.calcSolvable();
+            const nextSolved = this.calcSolved();
+            if (nextSolvable != this.solvable || nextSolved != this.solved) {
+                this.solvable = nextSolvable;
+                this.solved = nextSolved;
+                this.$emit('stateChanged', nextSolvable, nextSolved);
+            }
         },
         initializeBoard(initialValue: number[], solutionValue: number[]) {
             let i = 0;
@@ -233,6 +239,12 @@ export default  {
             helper(0);
             return (noSolutionsFound == 1 ? solution : undefined);
         }, 
+        calcSolved(): boolean {
+            return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.value == cell.solutionValue; });
+        },
+        calcSolvable(): boolean {
+            return !this.seedMode && (this.$refs.cell as TSudokuCell[]).every((cell) => { return cell.value == 0 || cell.value == cell.solutionValue; });
+        },
     },
 }
 </script>

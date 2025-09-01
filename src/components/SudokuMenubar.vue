@@ -12,7 +12,7 @@
                         <svg viewBox="0 0 100 100" width="32" height="32">
                         <circle cx="50" cy="50" r="40" fill="#e6e6e6" />
                         </svg>
-                        <div><span class="pi pi-times"></span></div>
+                        <div><span class="pi" :class="statusIcon" :style="statusIconStyle"></span></div>
                     </div>
                 </div>
             </template>
@@ -55,7 +55,6 @@
   position: absolute;
   width: 32px;
   height: 32px;
-  color: red;
   display: flex;
   justify-content:center;
   align-items: center;
@@ -86,17 +85,19 @@ export default {
             seedMode: false,
             elapsedSeconds : 0,
             elapsedSecondsTimerId : 0,
+            solvable : true,
+            solved : false,
             items : [
                 {
                     label: 'Seed',
-                    icon: 'pi pi-home',
+                    icon: 'pi pi-calculator',
                     command: () => {
                         this.$emit('seedModeChanged', !this.seedMode);
                     }
                 },
                 {
                     label: 'Generate-New',
-                    icon: 'pi pi-search',
+                    icon: 'pi pi-plus',
                     items: [
                         {
                             label: 'Easy',
@@ -119,7 +120,11 @@ export default {
                             command: () => { (this.genNewSudoku as Function)('expert')}
                         }
                     ]
-                }
+                },
+                {
+                  label: "New-from-Library",
+                  icon: 'pi pi-database'
+                },
             ]
         }
     },
@@ -131,7 +136,27 @@ export default {
         date.setSeconds(this.elapsedSeconds);
         const result: string = date.toISOString().slice(11, 19);
         return result;        
-      }
+      },
+      statusIcon()
+      {
+        return {
+          'pi-check': this.solved,
+          'pi-times': !this.solvable,
+          'pi-spin pi-spinner': this.solvable && !this.solved
+        }
+      },
+      statusIconStyle()
+      {
+        if (this.solved) {
+          return {color: 'green', 'font-weight': 'bold'};
+        }
+        else if (!this.solvable) {
+          return {color: 'red', 'font-weight': 'bold'}
+        }
+        else {
+          return { color: 'black', 'font-weight': 'bold'}
+        }
+      },
     },
     methods: {
       toggleSeedMode() {
@@ -156,7 +181,17 @@ export default {
           const ns : number = (cs == '-' ? Number(0) : Number(cs))
           solutionstate.push(ns);
         }
+        this.elapsedSeconds = 0;
         this.$emit('newSudokuReady', initialstate, solutionstate);
+      },
+      updateStatus (solvable:boolean, solved:boolean)
+      {
+        this.solvable = solvable;
+        this.solved = solved;
+        if (solved) {
+          this.stopElapsedSecondsTimer();
+        }
+        console.log(this.solvable, this.solved);
       }
     },
     mounted() {

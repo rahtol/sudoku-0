@@ -25,6 +25,8 @@ export default {
       mode: 1,
       autoCandidateMode: false,
       seedMode: false,
+      solvable : true,
+      solved : false,
     };
   },
   components: {
@@ -132,6 +134,13 @@ export default {
         (this.$refs.SudokuMenubar as typeof SudokuMenubar).stopElapsedSecondsTimer();
         (this.$refs.SudokuBoard as typeof SudokuBoard).initializeBoard(initialValue, solutionValue);
         (this.$refs.SudokuMenubar as typeof SudokuMenubar).startElapsedSecondsTimer();
+    },
+    onStateChanged(solvable:boolean, solved:boolean)
+    {
+        const sudokuMenubar = this.$refs.SudokuMenubar as typeof SudokuMenubar;
+        this.solvable = solvable;
+        this.solved = solved;
+        sudokuMenubar.updateStatus(solvable, solved);
     }
   },
   mounted() {
@@ -156,6 +165,7 @@ export default {
         :mode="mode"
         :autoCandidateMode="autoCandidateMode"
         :seedMode="seedMode"
+        @stateChanged="onStateChanged"
       />
       <SudokuControls ref="SudokuControls"
           @keyPressed="keyPressed" 
@@ -163,11 +173,13 @@ export default {
           @autoCandidateModeChange="setAutoCandidateMode"
       />
     </div>
-    <div class="debug">
+    <div class="debug" style="display:none">
       <hr>
       availableBoardWith={{ availableBoardWidth }}<br>
       windowWidth={{ $windowWidth }}<br>
-      <span class="pi pi-check"></span>
+      <span class="pi pi-check"></span><br>
+      solvable={{ solvable }}<br>
+      solved={{ solved }}
     </div>
   </div>
 </template>
