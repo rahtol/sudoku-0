@@ -6,7 +6,7 @@
                 <div class="text-xl font-bold px-3">Sudoku</div>
             </template>
             <template #end>
-                <div class="StatusIndications">
+                <div v-show="mode==1" class="StatusIndications">
                     <div class="TimerIndication">{{ elapsed_HHMMSS }}</div>
                     <div class="SolutionUniqeIndication">
                         <svg viewBox="0 0 100 100" width="32" height="32">
@@ -68,6 +68,26 @@ import Menubar from 'primevue/menubar'
 import 'primeicons/primeicons.css'
 import { getSudoku } from 'sudoku-gen';
 import type { Difficulty } from 'sudoku-gen/dist/types/difficulty.type';
+import { file } from '@primeuix/themes/aura/fileupload';
+
+declare global {
+  interface Window {
+    showOpenFilePicker(pickerOpts: any): Promise<FileSystemFileHandle[]>;
+  }
+}
+
+const pickerOpts = {
+  types: [
+    {
+      description: "Images",
+      accept: {
+        "image/*": [".png", ".gif", ".jpeg", ".jpg"],
+      },
+    },
+  ],
+  excludeAcceptAllOption: true,
+  multiple: false,
+};
 
 export default {
     name: 'SudokuMenubar',
@@ -87,6 +107,7 @@ export default {
             elapsedSecondsTimerId : 0,
             solvable : true,
             solved : false,
+            mode : 1,
             items : [
                 {
                     label: 'Seed',
@@ -122,8 +143,35 @@ export default {
                     ]
                 },
                 {
-                  label: "New-from-Library",
-                  icon: 'pi pi-database'
+                  label: "New-from-Image",
+                  icon: 'pi pi-database',
+                  items: [
+                    {
+                      label: 'From-File',
+                      icon: 'pi pi-image',
+                      command: async () => {
+                        try {
+                          const [filehandle] = await window.showOpenFilePicker(pickerOpts);
+                          if (!filehandle) {
+                            console.error('No file selected');
+                            return;
+                          }
+                          const file = await filehandle.getFile();
+                          console.log('Selected file:', file.name);
+                          this.$emit('newFromFileActive', true, filehandle, null);
+                        } catch (error) {
+                          console.error('File picker cancelled or error:', error);
+                        }
+                      },
+                    },
+                    {
+                      label: 'From-Camera',
+                      icon: 'pi pi-camera',
+                      command: () => { 
+                        console.log("Not implemented yet");
+                      },
+                    }
+                  ]
                 },
             ]
         }
@@ -164,10 +212,12 @@ export default {
       },
       startElapsedSecondsTimer () {
         this.elapsedSecondsTimerId = setInterval(() => this.elapsedSeconds += 1, 1000);
+        console.log('ElapsedSecondsTimer started');
       },
       stopElapsedSecondsTimer() {
         clearInterval(this.elapsedSecondsTimerId);
         this.elapsedSecondsTimerId = 0;
+        console.log('ElapsedSecondsTimer stopped');
       },
       genNewSudoku(difficulty : Difficulty) {
         const sudoku = getSudoku(difficulty);

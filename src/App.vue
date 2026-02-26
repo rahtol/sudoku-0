@@ -5,6 +5,8 @@ import SudokuControls from './components/SudokuControls.vue'
 import { vueWindowSizeMixin } from 'vue-window-size/mixin';
 import SudokuBoard from './components/SudokuBoard.vue';
 import 'primeicons/primeicons.css';
+import NewFromFile from './components/NewFromFile.vue';
+import { file } from '@primeuix/themes/aura/fileupload';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let example0 = '000000160000900005430020000001000040600050030008100007070000002590270000000000050';  // NYT 08.12.2023
@@ -27,12 +29,14 @@ export default {
       seedMode: false,
       solvable : true,
       solved : false,
+      filehandle: {} as FileSystemFileHandle,
     };
   },
   components: {
     SudokuControls,
     SudokuBoard,
     SudokuMenubar,
+    NewFromFile,
   },
   computed: {
     availableBoardWidth() {
@@ -141,9 +145,30 @@ export default {
         this.solvable = solvable;
         this.solved = solved;
         sudokuMenubar.updateStatus(solvable, solved);
+    },
+    newFromFileActive(active: boolean, filehandle: any, result: number [][] | null)
+    {
+      const sudokuMenubar = this.$refs.SudokuMenubar as typeof SudokuMenubar;
+      const sudokuBoard = this.$refs.SudokuBoard as typeof SudokuBoard;
+      if (active) {
+        sudokuMenubar.stopElapsedSecondsTimer();
+        this.filehandle = filehandle;
+        this.mode = 2;
+        sudokuMenubar.mode = 2;
+    }
+      else {
+        this.mode = 1;
+        if (result != null && result.length > 0) {
+          sudokuMenubar.elapsedSeconds = 0;
+          sudokuBoard.initializeBoard(result, sudokuBoard.checkForUniqueSolution(result));
+        }
+        sudokuMenubar.mode = 1;
+        sudokuMenubar.startElapsedSecondsTimer();
+      }
     }
   },
   mounted() {
+    console.log('mounted');
     const na = convertIntialState(example1);
     const sudokuBoard = this.$refs.SudokuBoard as typeof SudokuBoard;
     (sudokuBoard).initializeBoard(na, sudokuBoard.checkForUniqueSolution(na));
@@ -158,8 +183,9 @@ export default {
     <SudokuMenubar :initialized="true" ref="SudokuMenubar"
       @seedModeChanged="seedModeChanged"
       @newSudokuReady="newSudokuReady"
+      @newFromFileActive="newFromFileActive"
     />
-    <div class="su-container" >
+    <div v-show="mode==1" class="su-container" >
       <SudokuBoard ref="SudokuBoard" 
         :available_width="availableBoardWidth" 
         :mode="mode"
@@ -173,10 +199,18 @@ export default {
           @autoCandidateModeChange="setAutoCandidateMode"
       />
     </div>
-    <div class="debug" style="display:none">
+    <div v-if="mode==2">
+      <NewFromFile ref="NewFromFile" 
+        :filehandle="filehandle"
+        :windowWidth="$windowWidth"
+        @newFromFileActive="newFromFileActive"
+      />
+    </div>
+    <div class="debug" style="display:none;">
       <hr>
       availableBoardWith={{ availableBoardWidth }}<br>
       windowWidth={{ $windowWidth }}<br>
+      windowHeight={{ $windowHeight }}<br>
       <span class="pi pi-check"></span><br>
       solvable={{ solvable }}<br>
       solved={{ solved }}
