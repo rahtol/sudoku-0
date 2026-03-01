@@ -25,6 +25,7 @@ export default {
   data() {
     return {
       mode: 1,
+      display_mode : 1,
       autoCandidateMode: false,
       seedMode: false,
       solvable : true,
@@ -153,16 +154,16 @@ export default {
       if (active) {
         sudokuMenubar.stopElapsedSecondsTimer();
         this.filehandle = filehandle;
-        this.mode = 2;
-        sudokuMenubar.mode = 2;
+        this.display_mode = 2;
+        sudokuMenubar.display_mode = 2;
     }
       else {
-        this.mode = 1;
+        this.display_mode = 1;
         if (result != null && result.length > 0) {
           sudokuMenubar.elapsedSeconds = 0;
           sudokuBoard.initializeBoard(result, sudokuBoard.checkForUniqueSolution(result));
         }
-        sudokuMenubar.mode = 1;
+        sudokuMenubar.display_mode = 1;
         sudokuMenubar.startElapsedSecondsTimer();
       }
     }
@@ -185,7 +186,7 @@ export default {
       @newSudokuReady="newSudokuReady"
       @newFromFileActive="newFromFileActive"
     />
-    <div v-show="mode==1" class="su-container" >
+    <div v-show="display_mode==1" class="su-container" >
       <SudokuBoard ref="SudokuBoard" 
         :available_width="availableBoardWidth" 
         :mode="mode"
@@ -199,7 +200,7 @@ export default {
           @autoCandidateModeChange="setAutoCandidateMode"
       />
     </div>
-    <div v-if="mode==2">
+    <div v-if="display_mode==2">
       <NewFromFile ref="NewFromFile" 
         :filehandle="filehandle"
         :windowWidth="$windowWidth"

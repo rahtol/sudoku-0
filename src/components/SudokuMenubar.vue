@@ -6,7 +6,7 @@
                 <div class="text-xl font-bold px-3">Sudoku</div>
             </template>
             <template #end>
-                <div v-show="mode==1" class="StatusIndications">
+                <div v-show="display_mode==1" class="StatusIndications">
                     <div class="TimerIndication">{{ elapsed_HHMMSS }}</div>
                     <div class="SolutionUniqeIndication">
                         <svg viewBox="0 0 100 100" width="32" height="32">
@@ -107,7 +107,7 @@ export default {
             elapsedSecondsTimerId : 0,
             solvable : true,
             solved : false,
-            mode : 1,
+            display_mode : 1,
             items : [
                 {
                     label: 'Seed',
